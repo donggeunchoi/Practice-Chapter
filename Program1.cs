@@ -36,7 +36,7 @@
 
 // Console.WriteLine($"결과는 다음과 같습니다. 더하기{plous}, 빼기{miner}, 곱하기{rhqgkrl}, 나누기{sksnrl}");
 
-//bmi 계산하기
+//bmi 계산하기(수정 필요)
 
 Console.WriteLine(" 본인의 몸무게는 몇입니까?");
 string Kgname = Console.ReadLine();
