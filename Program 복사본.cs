@@ -52,7 +52,7 @@ Roby = true;
 Console.WriteLine("0 : 시작 화면 돌아가기");
 
 }
-else if( gameloby == 2)
+else if( gameloby == 2)    
 {
     Console.WriteLine("인벤토리에 입장하셨습니다.");
 }
