@@ -68,13 +68,15 @@ Console.WriteLine(BMIm);
 
 Console.WriteLine($"당신의 BMI : {BMI}");
 
-using System.Runtime.CompilerServices;
 using System;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
+using System.Collections.Generic;
 
-//던전 게임 만들기 save용.
+
 namespace SpartaTownGame
 {
-    // 캐릭터 정보를 저장하는 클래스
+// 캐릭터 정보를 저장하는 클래스
     class Character
     {
         public int Level { get; set; } = 1;
@@ -170,6 +172,7 @@ namespace SpartaTownGame
                             break;
                         case 4:
                             Console.WriteLine("게임을 종료합니다. 감사합니다!");
+                            Pause();
                             return;
                         default:
                             Console.WriteLine("잘못된 입력입니다.");
@@ -185,7 +188,7 @@ namespace SpartaTownGame
         }
 
         // 캐릭터의 상태를 표시하는 메서드
-        private void ViewStatus()
+        public void ViewStatus()
         {
             bool viewStatue = true;
 
@@ -222,8 +225,15 @@ namespace SpartaTownGame
                 }
             }
         }
+        //장시 사용유무에 대한 메서드 선언.
+        public interface IEquippable
+        {
+            void Equip();
+            void Unequip();
+            bool IsEquipped{get; set;}
+        }
         //아이템에 대한 메서드
-    class Item
+        public class Item
         {
             public string Name {get;}
             public string Description {get;}
@@ -239,10 +249,31 @@ namespace SpartaTownGame
                 Defense = defense;
                 IsEquipped = false;
             }
+
+            private Item weapons;
+
+            //사용에 대한 메서드
+            public void Equip()
+            {
+                IsEquipped = true;
+                Console.WriteLine($"{weapons.Name}을(를) 장착했습니다");
+            }
+
+            //해제에 대한 메서드.
+            public void Unequip()
+            {
+                IsEquipped = false;
+                Console.WriteLine($"{weapons.Name}을(를) 해제했습니다.");
+            }
         }
+
+        
+       
         // 인벤토리 기능의 플레이스홀더 메서드
-        private void ShowInventory()
+        public void ShowInventory()
         {
+            
+
             bool Showinventory = true;
 
             while(Showinventory)
@@ -281,12 +312,13 @@ namespace SpartaTownGame
         }
 
         //장비 관리의 플레이스 홀더 메서드
-        private void Equipment()
+        public void Equipment()
         {
             bool Equipment = true;
+
             while(Equipment)
             {
-                Console.Clear();
+            Console.Clear();
             Console.WriteLine("보유 중인 아이템을 관리할 수 있습니다.");
 
             Console.WriteLine("[아이템 목록]");
@@ -312,13 +344,39 @@ namespace SpartaTownGame
                 }
             }
         }
-
+        
         // 상점 기능의 플레이스홀더 메서드
-        private void VisitStore()
+        public void VisitStore()
         {
+            bool visitstore = true;
+            while(visitstore)
+            {
+
             Console.Clear();
-            Console.WriteLine("상점 기능이 구현 중입니다.");
-            Pause();
+            Console.WriteLine("상점 오픈 준비 중입니다.");
+            
+            Console.WriteLine("0. 나가기");
+            
+            Console.Write("\n원하시는 행동을 입력해주세요.\n>> ");
+            string output = Console.ReadLine();
+
+            int choice;
+
+                if (int.TryParse(output, out choice))
+                {
+                    switch(choice)
+                    {
+                        case 0:
+                        DisplayMenu();
+                        break;
+
+                        default:
+                        Console.WriteLine("잘못된 입력입니다.");
+                        break;
+                    }
+                }
+            }
+            
         }
 
         
@@ -328,7 +386,7 @@ namespace SpartaTownGame
             Console.WriteLine("\n계속하려면 아무 키나 누르세요...");
             Console.ReadKey();
         }
-    }
+    } 
 
     // 프로그램의 시작점
     class Program
@@ -339,4 +397,5 @@ namespace SpartaTownGame
             game.DisplayMenu();
         }
     }
+
 }
