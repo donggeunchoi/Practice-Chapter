@@ -76,7 +76,7 @@ using System.Collections.Generic;
 
 namespace SpartaTownGame
 {
-// 캐릭터 정보를 저장하는 클래스
+    // 캐릭터 정보를 저장하는 클래스
     class Character
     {
         public int Level { get; set; } = 1;
@@ -85,14 +85,88 @@ namespace SpartaTownGame
         public int AttackPower { get; set; } = 10;
         public int Defense { get; set; } = 5;
         public int Health { get; set; } = 100;
-        public int Gold { get; set; } = 0;
+        public int Gold { get; set; } = 1500;
         
     }
 
+        //인벤토리 클래스
+    class Inventory
+    {
+        //웨폰이라는 무기 목록을 저장할 리스트를 만들었어요.
+        private List<Item> Weapons;
+                
+        //인벤토리를 생성합시다.
+        public Inventory()
+        {
+            //웨폰은 새로은 리스트를 만듭니다.
+            Weapons = new List<Item>();
+            Itemmake();
+        }
+
+            //인벤토리에 들어가는 무기들을 셋팅해줍시다.
+        private void Itemmake()
+        {
+            Weapons.Add(new Item("무쇠갑옷", "무쇠로 만들어져 튼튼한 갑옷입니다.", 0, 5));
+            Weapons.Add(new Item("스파르타의 창", "스파르타의 전사들이 사용했다던 전설의 창입니다.", 7, 0));
+            Weapons.Add(new Item("낡은 검", "쉽게 볼 수 있는 낡은 검입니다.", 2, 0));
+        }
+        
+        //무기 리스트를 반환하는 메서드가 필요.
+        public List<Item> GetWeapons()
+        {
+            return Weapons;
+        }
+    }
+
+    class Item
+    {
+        //자동 프로퍼티 실행.
+        public string Name {get;}
+        public string Description {get;}
+        public int AttackPower{get;}
+        public int Defense{get;}
+        public bool IsEquipped {get; set;}
+
+            //생성자 
+        public Item(string name, string description, int attackPower, int defense )
+        {
+            Name = name;
+            Description = description;
+            AttackPower = attackPower;
+            Defense = defense;
+            IsEquipped = false;
+        }
+            
+            //장시 사용유무에 대한 메서드 선언.
+        public interface IEquippable
+        {
+            void Equip();
+            void Unequip();
+            bool IsEquipped{get; set;}
+        }
+
+        //장착에 대한 메서드
+        public void Equip()
+        {
+            IsEquipped = true;
+            Console.WriteLine($"{Name}을(를) 장착했습니다");
+        }
+
+            //해제에 대한 메서드.
+        public void Unequip()
+        {
+            IsEquipped = false;
+            Console.WriteLine($"{Name}을(를) 해제했습니다.");
+        }
+           
+    }
+            
+    
     // 게임의 흐름을 관리하는 클래스
     class Game
     {
         private Character player;
+        private Inventory inventory;
 
         // 생성자: 캐릭터 이름을 입력받아 생성
         public Game()
@@ -196,14 +270,14 @@ namespace SpartaTownGame
             {
             Console.Clear();
             Console.WriteLine("=== 캐릭터 상태 ===");
-            Console.WriteLine($"레벨: {player.Level}");
+            Console.WriteLine($"Lv. {player.Level}");
             Console.WriteLine($"이름: {player.Name}");
-            Console.WriteLine($"직업: {player.Job}");
+            Console.WriteLine($"Chad ( {player.Job} )");
             Console.WriteLine($"공격력: {player.AttackPower}");
             Console.WriteLine($"방어력: {player.Defense}");
             Console.WriteLine($"체력: {player.Health}");
             Console.WriteLine($"Gold: {player.Gold}");
-
+            Console.WriteLine();
             Console.WriteLine("0. 나가기");
 
             Console.Write("\n원하시는 행동을 입력해주세요.\n>> ");
@@ -225,55 +299,11 @@ namespace SpartaTownGame
                 }
             }
         }
-        //장시 사용유무에 대한 메서드 선언.
-        public interface IEquippable
-        {
-            void Equip();
-            void Unequip();
-            bool IsEquipped{get; set;}
-        }
-        //아이템에 대한 메서드
-        public class Item
-        {
-            public string Name {get;}
-            public string Description {get;}
-            public int AttackPower{get;}
-            public int Defense{get;}
-            public bool IsEquipped {get; set;}
-
-            public Item(string name, string description, int attackPower, int defense, bool IsEquipped )
-            {
-                Name = name;
-                Description = description;
-                AttackPower = attackPower;
-                Defense = defense;
-                IsEquipped = false;
-            }
-
-            private Item weapons;
-
-            //사용에 대한 메서드
-            public void Equip()
-            {
-                IsEquipped = true;
-                Console.WriteLine($"{weapons.Name}을(를) 장착했습니다");
-            }
-
-            //해제에 대한 메서드.
-            public void Unequip()
-            {
-                IsEquipped = false;
-                Console.WriteLine($"{weapons.Name}을(를) 해제했습니다.");
-            }
-        }
-
         
-       
-        // 인벤토리 기능의 플레이스홀더 메서드
+        // 인벤토리 기능의 눈으로 볼 수 있게 만드는 메서드
         public void ShowInventory()
         {
             
-
             bool Showinventory = true;
 
             while(Showinventory)
@@ -282,6 +312,14 @@ namespace SpartaTownGame
             Console.WriteLine("보유 중인 아이템을 관리할 수 있습니다.");
 
             Console.WriteLine("[아이템 목록]");
+
+            List<Item> weapons = inventory.GetWeapons();
+
+            for(int i = 0; i < weapons.Count; i++)
+            {
+                Item item = weapons[i];
+                Console.WriteLine($"아이템 이름 : {item.Name} / {item.Description} / 공격력 : {item.AttackPower} / 방어력 : {item.Defense} ");
+            }
 
             Console.WriteLine("1. 장비 관리");
             Console.WriteLine("0. 나가기");
@@ -375,27 +413,28 @@ namespace SpartaTownGame
                         break;
                     }
                 }
-            }
-            
+            }   
         }
-
-        
-        // 사용자가 계속 진행할 수 있도록 일시 정지하는 메서드
+         // 사용자가 계속 진행할 수 있도록 일시 정지하는 메서드
         private void Pause()
         {
             Console.WriteLine("\n계속하려면 아무 키나 누르세요...");
             Console.ReadKey();
         }
-    } 
-
-    // 프로그램의 시작점
-    class Program
-    {
-        static void Main(string[] args)
+            class Program
         {
-            Game game = new Game();
-            game.DisplayMenu();
+            static void Main(string[] args)
+            {
+                Game game = new Game();
+                game.DisplayMenu();
+
+            }
         }
+
+    
+        
+    } 
+}
     }
 
 }
