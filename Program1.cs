@@ -65,7 +65,7 @@ namespace SpartaTownGame
             {
                 Console.WriteLine($"{Name}은(는) 이미 장착되어 있습니다.");
             }
-            
+
         }
 
         //해제에 대한 메서드.
@@ -80,7 +80,7 @@ namespace SpartaTownGame
             {
                 Console.WriteLine($"{Name}은(는) 이미 해제 상태입니다.");
             }
-            
+
         }
         // 상태 반환 메서드
         public string Getstatus()
@@ -95,7 +95,7 @@ namespace SpartaTownGame
     {
         public List<Item> Items { get; }
         //웨폰이라는 무기 목록을 저장할 리스트를 만들었어요.
-       
+
 
         //인벤토리를 생성합시다.
         public Inventory()
@@ -121,7 +121,13 @@ namespace SpartaTownGame
         {
             return Items.Contains(item);
         }
-    
+        //아이템 판매 메서드.
+        public void SaleItem(Item item)
+        {
+            Items.Remove(item);
+            Console.WriteLine($"{item.Name}을(를) 인벤토리에 뺐습니다.");
+        }
+
     }
 
     class Store
@@ -133,7 +139,13 @@ namespace SpartaTownGame
         public Store()
         {
             storeItem = new List<Item>();
+            itemmake();
 
+        }
+
+
+        public void itemmake()
+        {
             storeItem.Add(new Item("수련자 갑옷", "수련에 도움을 주는 갑옷입니다.", 0, 5, 1000));
             storeItem.Add(new Item("무쇠 갑옷", "무쇠로 만들어져 튼튼한 갑옷입니다.", 0, 9, 0));
             storeItem.Add(new Item("스파르타의 갑옷", "스파르타의 전사들이 사용했다는 전설의 갑옷입니다.", 0, 15, 3500));
@@ -142,16 +154,15 @@ namespace SpartaTownGame
             storeItem.Add(new Item("스파르타의 창", "스파르타의 전사들이 사용했다는 전설의 창입니다.", 7, 0, 0));
             storeItem.Add(new Item("스파르타의 화살", "스파르타의 전사들이 사용했다는 전설의 활입니다.", 5, 0, 200));
             storeItem.Add(new Item("나무 지팡이", "나무인가 돌인가 무게감에서 나타나는 중후한 마법지팡이", 5, 0, 500));
-        } 
-
+        }
         public List<Item> GetItems()
         {
             return storeItem;
         }
 
-        
-       //아이템 구매 메서드.
-        public void Purchase(Character player ,Item item, Inventory inventory)
+
+        //아이템 구매 메서드.
+        public void Purchase(Character player, Item item, Inventory inventory)
         {
 
             if (!storeItem.Contains(item))
@@ -177,6 +188,28 @@ namespace SpartaTownGame
             player.Defense += item.Defense;
             storeItem.Remove(item);
             Console.WriteLine($"{item.Name}을(를) 구매하였습니다.");
+        }
+
+        public void SaleItem(Character player, Item item, Inventory inventory)
+        {
+
+            // 판매할때 인벤토리에 해당 물건이 없을 경우 - 이미 판매 하였습니다.
+            
+            if (!inventory.selectedItem(item))
+            {
+                Console.WriteLine("이미 판매한 물건입니다.");
+            }
+
+            Console.WriteLine();
+            item.Unequip();
+            inventory.SaleItem(item);
+            player.Gold += item.Gold * 85 / 100;
+            player.AttackPower -= item.AttackPower;
+            player.Defense -= item.Defense;
+            
+            storeItem.Add(item);
+            Console.WriteLine($"{item.Name}을(를) 판매하였습니다.");
+
         }
 
     }
@@ -242,9 +275,9 @@ namespace SpartaTownGame
                 Console.WriteLine("1. 상태 보기");
                 Console.WriteLine("2. 인벤토리");
                 Console.WriteLine("3. 상점");
-               Console.WriteLine("4. 휴식하기");
-                Console.WriteLine("게임 종료");
-               Console.Write("\n원하시는 행동을 입력해주세요.\n>> ");
+                Console.WriteLine("4. 휴식하기");
+                Console.WriteLine("5. 게임 종료");
+                Console.Write("\n원하시는 행동을 입력해주세요.\n>> ");
 
                string input = Console.ReadLine();
                 int choice;
@@ -289,7 +322,7 @@ namespace SpartaTownGame
         // 캐릭터의 상태를 표시하는 메서드
         public void ViewStatus()
         {
-        
+
             bool viewStatue = true;
 
             while (viewStatue)
@@ -394,21 +427,21 @@ namespace SpartaTownGame
 
                 Console.WriteLine("[아이템 목록]");
 
-                List<Item> items = inventory.GetWeapons();
+                List<Item> weapons = inventory.GetWeapons();
 
-                if (items.Count == 0)
+                if (weapons.Count == 0)
                 {
                     Console.WriteLine("소지한 아이템이 없습니다.");
                 }
                 else
                 {
-                    for (int i = 0; i < items.Count; i++)
+                    for (int i = 0; i < weapons.Count; i++)
                     {
-                        Item item = items[i];
+                        Item item = weapons[i];
                         Console.WriteLine($"{i + 1} {item.Getstatus()} 아이템 이름 : {item.Name} / {item.Description} / 공격력 : {item.AttackPower} / 방어력 : {item.Defense} ");
                     }
                 }
-                
+
                 Console.WriteLine("0. 나가기");
 
                 Console.Write("\n원하시는 행동을 입력해주세요.\n>> ");
@@ -421,9 +454,9 @@ namespace SpartaTownGame
                     {
                         ShowInventory();
                     }
-                    else if (choice > 0 && choice <= items.Count)
+                    else if (choice > 0 && choice <= weapons.Count)
                     {
-                        Item selectedItem = items[choice - 1];
+                        Item selectedItem = weapons[choice - 1];
                         if (!selectedItem.IsEquipped)
                         {
                             selectedItem.Equip();
@@ -444,15 +477,56 @@ namespace SpartaTownGame
         // 상점 기능의 플레이스홀더 메서드
         public void VisitStore()
         {
-          
+
             bool visitstore = true;
             while (visitstore)
             {
 
                 Console.Clear();
-                Console.WriteLine("상품 목록");
+                Console.WriteLine($"보유 골드 : {player.Gold}");
+                Console.WriteLine("1. 구매하기");
+                Console.WriteLine("2. 판매하기");
                 Console.WriteLine();
+                Console.WriteLine("0. 나가기");
+                Console.WriteLine();
+                Console.Write("\n원하시는 행동을 입력해주세요.\n>> ");
+                string output = Console.ReadLine();
 
+                int choice;
+
+                if (int.TryParse(output, out choice))
+                {
+                    if (choice == 0)
+                    {
+                        visitstore = false;
+                    }
+                    else if (choice == 1)
+                    {
+                        Buy();
+                    }
+                    else if (choice == 2)
+                    {
+                        Sale();
+                    }
+                    else
+                    {
+                        Console.WriteLine("잘못된 입력입니다.");
+                    }
+                }
+            }
+        }
+
+        //구매창를 위한 메서드.
+        public void Buy()
+        {
+            bool buy = true;
+
+            while (buy)
+            {
+                Console.Clear();
+                Console.WriteLine($"보유 골드 : {player.Gold}");
+                Console.WriteLine("[상품 목록]");
+                Console.WriteLine();
 
                 List<Item> storeItems = store.GetItems();
 
@@ -475,7 +549,7 @@ namespace SpartaTownGame
                 {
                     if (choice == 0)
                     {
-                        visitstore = false;
+                        buy = false;
                     }
                     else if (choice > 0 && choice <= storeItems.Count)
                     {
@@ -487,9 +561,59 @@ namespace SpartaTownGame
                         Console.WriteLine("잘못된 입력입니다.");
                     }
                 }
+                
             }
         }
+        //판매창를 위한 메서드.
+        public void Sale()
+        {
+            bool sale = true;
+            while (sale)
+            {
+                Console.Clear();
+                 Console.WriteLine($"보유 골드 : {player.Gold}");
+                Console.WriteLine("[판매할 물품]");
 
+                List<Item> weapons = inventory.GetWeapons();
+
+                if (weapons.Count == 0)
+                {
+                    Console.WriteLine("판매할 아이템이 없습니다.");
+                }
+                else
+                {
+                    for (int i = 0; i < weapons.Count; i++)
+                    {
+                        Item item = weapons[i];
+                        Console.WriteLine($"{i + 1} {item.Getstatus()} 아이템 이름 : {item.Name} / {item.Description} / 공격력 : {item.AttackPower} / 방어력 : {item.Defense} ");
+                    }
+                }
+                Console.WriteLine("0. 나가기");
+
+                Console.Write("\n원하시는 행동을 입력해주세요.\n>> ");
+                string output = Console.ReadLine();
+
+                int choice;
+
+                if (int.TryParse(output, out choice))
+                {
+                    if (choice == 0)
+                    {
+                        sale = false;
+                    }
+                    else if (choice > 0 && choice <= weapons.Count)
+                    {
+                         Item selectedItem = weapons[choice - 1];
+                        store.SaleItem(player ,selectedItem, inventory);
+                    }
+                    else
+                    {
+                        Console.WriteLine("잘못된 입력입니다.");
+                    }
+                }
+            
+            }
+        }
         public void resting()
         {
             bool resting = true;
@@ -508,22 +632,32 @@ namespace SpartaTownGame
                 int choice;
                 if (int.TryParse(output, out choice))
                 {
-                switch (choice)
+                    switch (choice)
                     {
                         case 0:
                             DisplayMenu();
                             break;
+
                         case 1:
-                            player.Gold -= 500;
-                            player.Health = 100;
-                            Console.WriteLine("체력이 100이 되었습니다.");
+                            if (player.Gold <= 0)
+                            {
+                                Console.WriteLine("골드가 부족합니다.");
+                                break;
+                            }
+                            else
+                            {
+                                player.Gold -= 500;
+                                player.Health = 100;
+                                Console.WriteLine("체력이 100이 되었습니다.");
+                            }
                             break;
+
                         default:
                             Console.WriteLine("잘못된 입력입니다.");
-                             break;
+                            break;
                     }
                 }
-                
+
             }
         }
 
@@ -541,6 +675,8 @@ namespace SpartaTownGame
 
             }
         }
+    }
+}
 
 
 
