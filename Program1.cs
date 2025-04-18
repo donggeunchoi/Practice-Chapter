@@ -13,7 +13,7 @@ namespace SpartaTownGame
     // 캐릭터 정보를 저장하는 클래스
     class Character
     {
-        public int Level { get; set; } = 1;
+        public int Level { get; set; } = 01;
         public string Name { get; set; }
         public string Job { get; set; }
         public int AttackPower { get; set; } = 10;
@@ -193,14 +193,6 @@ namespace SpartaTownGame
 
         public void SaleItem(Character player, Item item, Inventory inventory)
         {
-
-            // 판매할때 인벤토리에 해당 물건이 없을 경우 - 이미 판매 하였습니다.
-            
-            if (!inventory.selectedItem(item))
-            {
-                Console.WriteLine("이미 판매한 물건입니다.");
-            }
-
             Console.WriteLine();
             item.Unequip();
             inventory.SaleItem(item);
@@ -210,7 +202,6 @@ namespace SpartaTownGame
             
             storeItem.Add(item);
             Console.WriteLine($"{item.Name}을(를) 판매하였습니다.");
-
         }
 
     }
