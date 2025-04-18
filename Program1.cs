@@ -5,6 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Collections.Generic;
 using System.Runtime.Intrinsics.Arm;
 using System.Dynamic;
+using System.Security;
 
 
 namespace SpartaTownGame
@@ -213,15 +214,32 @@ namespace SpartaTownGame
         }
 
     }
+    class Dungeon
+    {
+        
+        public string Name { get; set; }
+        public int RecommendDefence { get; set; }
+        public int BaseReward { get; set; }
 
+        //던전 생성자? 생성?
+        public Dungeon(string name, int recommendDefence, int baseReward)
+        {
+            Name = name;
+            RecommendDefence = recommendDefence;
+            BaseReward = baseReward;
+        }
+
+
+    }
         // 게임의 흐름을 관리하는 클래스
     class Game
     {
         private Character player = new Character();
         private Inventory inventory = new Inventory();
         private Store store = new Store();
+    
 
-            // 생성자: 캐릭터 이름을 입력받아 생성
+         // 생성자: 캐릭터 이름을 입력받아 생성
         public Game()
         {
             Console.Write("캐릭터의 이름을 입력해주세요: ");
@@ -256,7 +274,7 @@ namespace SpartaTownGame
                         break;
                     default:
                         Console.WriteLine("잘못된 입력입니다. 다시 선택해주세요.");
-                    continue;
+                        continue;
                 }
                 break;
             }
@@ -275,8 +293,9 @@ namespace SpartaTownGame
                 Console.WriteLine("1. 상태 보기");
                 Console.WriteLine("2. 인벤토리");
                 Console.WriteLine("3. 상점");
-                Console.WriteLine("4. 휴식하기");
-                Console.WriteLine("5. 게임 종료");
+                Console.WriteLine("4. 휴식");
+                Console.WriteLine("5. 던전 입장");
+                Console.WriteLine("6. 게임 종료하기");
                 Console.Write("\n원하시는 행동을 입력해주세요.\n>> ");
 
                string input = Console.ReadLine();
@@ -299,7 +318,10 @@ namespace SpartaTownGame
                         case 4:
                             resting();
                             break;
-                        case 5 :
+                        case 5:
+                            dungeon();
+                            break;    
+                        case 6:
                             Console.WriteLine("게임을 종료합니다. 감사합니다!");
                             Pause();
                             return;
@@ -316,9 +338,118 @@ namespace SpartaTownGame
             }
         }
 
-        // 게임 메뉴를 표시하고 사용자 입력을 처리하는 메서드
+        public void dungeon()
+        {
+            Dungeon easy = new Dungeon("쉬운 던전", 5, 1000);
+            Dungeon normal = new Dungeon("일반 던전", 11, 1500);
+            Dungeon hard = new Dungeon("어려운 던전", 17, 2000);
 
+            bool dungeon = true;
+            
+            while (dungeon)
+            {
+                Console.Clear();
+                Console.WriteLine("[던전입장]");
+                Console.WriteLine();
+                Console.WriteLine("이곳에서 던전으로 들어가기전 활동을 할 수 있습니다.");
 
+                Console.WriteLine("1. 쉬운 던전   | 방어력 5 이상 권장");
+                Console.WriteLine("2. 일반 던전   | 방어력 11 이상 권장");
+                Console.WriteLine("3. 어려운 던전  | 방어력 17 이상 권장");
+
+                Console.WriteLine("0. 나가기");
+
+                Console.Write("\n원하시는 행동을 입력해주세요.\n>> ");
+                string output = Console.ReadLine();
+
+                int choice;
+                if (int.TryParse(output, out choice))
+                {
+                    switch (choice)
+                    {
+                        case 1:
+                            AttemptDungeonRun(player, easy);
+                            break;
+                        case 2:
+                            AttemptDungeonRun(player, normal);
+                            break;
+                        case 3:
+                            AttemptDungeonRun(player, hard);
+                            break;
+                        case 0:
+                            DisplayMenu();
+                            break;
+                        default:
+                            Console.WriteLine("잘못된 입력입니다. 다시 시도해주세요.");
+                            break;            
+                    }
+                }
+            }
+        }
+        //던전 시도 메서드.        
+        static void AttemptDungeonRun(Character player, Dungeon dungeon)
+        {
+            Random random = new Random();
+            bool success = true;
+
+            if (player.Defense < dungeon.RecommendDefence)
+            {
+                int chance = random.Next(100);
+                if (chance < 40)
+                {
+                    success = false;
+                }
+            }
+
+            if (!success)
+            {
+                //던전 실패
+                Console.WriteLine("던전 실패");
+                Console.WriteLine("보상을 받지 못했습니다.");
+                int Healthno = player.Health / 2;
+                player.Health -= Healthno;
+                Console.WriteLine($"체력이 {player.Health + Healthno}에서 {Healthno}로 감소했습니다.");
+            }
+            else
+            {
+                //던전 클리어.
+                Console.WriteLine("축하합니다. 던전 클리어");
+                Console.WriteLine($"{dungeon.Name}을 클리어 했습니다.");
+
+                //체력소모계산.
+                //방어어려움.설정 = player방어력 - 던전의 추천방어력.
+                int defenseDifference = player.Defense - dungeon.RecommendDefence;
+                //최소범위 설정.
+                int minloss = 20 + defenseDifference;
+                //최대범위 설정.
+                int maxloss = 35 + defenseDifference;
+                //마이너스 방지.
+                if (minloss < 0)
+                {
+                    minloss = 0;
+                }
+                if (maxloss < 0)
+                {
+                    maxloss = 0;
+                }
+                //체력 깍이는 수준. = 랜덤(최소에서, 최대에 +1)
+                int healthconsumption = random.Next(minloss, maxloss + 1);
+                player.Health -= healthconsumption;
+
+                //골드 계산
+                //골드는. 던전의 보상.
+                int totalGold = dungeon.BaseReward;
+                int additionalpersent = random.Next(player.AttackPower, (player.AttackPower * 2) + 1);
+                double additional = totalGold * (additionalpersent / 100.0d);
+                totalGold += (int)additional;
+                player.Gold += totalGold;
+
+                //결과
+                Console.WriteLine("[탐험 결과]");
+                Console.WriteLine($"체력 {player.Health + healthconsumption} -> {player.Health}");
+                Console.WriteLine($"골드 {player.Gold - totalGold} G -> {player.Gold}G");
+            }
+        }
         // 캐릭터의 상태를 표시하는 메서드
         public void ViewStatus()
         {
@@ -345,7 +476,7 @@ namespace SpartaTownGame
                 int choice;
                 if (int.TryParse(output, out choice))
                 {
-                switch (choice)
+                    switch (choice)
                     {
                         case 0:
                             DisplayMenu();
@@ -353,7 +484,7 @@ namespace SpartaTownGame
 
                         default:
                             Console.WriteLine("잘못된 입력입니다.");
-                             break;
+                            break;
                     }
                 }
             }
@@ -677,7 +808,6 @@ namespace SpartaTownGame
         }
     }
 }
-
 
 
 --------------------------------------------------------------
