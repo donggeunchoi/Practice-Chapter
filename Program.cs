@@ -1,8 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-
-
-//--------------------------------------------------------------
 //사용자로부터 입력 받기
 string name;
 string age;
